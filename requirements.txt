@@ -114,6 +114,7 @@ pexpect==4.8.0
 Pillow==9.0.1
 platformdirs==4.2.2
 ply==3.11
+prettytable==3.10.0
 prometheus_client==0.20.0
 prompt_toolkit==3.0.47
 protobuf==3.12.4
@@ -182,6 +183,7 @@ wcwidth==0.2.13
 webcolors==24.6.0
 webencodings==0.5.1
 websocket-client==1.8.0
+wxPython @ file:///home/naimish/Downloads/wxPython-4.2.1-cp310-cp310-linux_x86_64.whl
 xdg==5
 xkit==0.0.0
 zipp==1.0.0

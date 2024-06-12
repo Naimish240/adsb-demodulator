@@ -1,6 +1,19 @@
 # adsb-demodulator
-SoapySDR-based ADSB demodulator written in python
+ADSB demodulator written in python
 
+## Dependancies
+- You'll need an RTL-SDR (for obvious reasons)
+- You'll need to have the RTL-SDR drivers installed
+
+
+## Running Instructions
+1. Create a virtual environment
+2. Install the dependancies from `requirements.txt`
+3. Run `python adsb.py`
+
+
+
+## Notes
 
 SoapySDR was installed on the device, not in the venv. Expose it by setting
 `include-system-site-packages = true`
