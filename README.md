@@ -9,9 +9,17 @@ ADSB demodulator written in python
 ## Running Instructions
 1. Create a virtual environment
 2. Install the dependancies from `requirements.txt`
-3. Run `python adsb.py`
+3. Run `python adsb.py` to run the live demodulator
 
+Note : You can also run `python adsb.py --save` to save the message dump to `dump.p`.
 
+## Sample Screenshots
+
+### Running Command
+![image](assets/command.png)
+
+### Sample Output
+![image](assets/sample_output.png)
 
 ## Notes
 

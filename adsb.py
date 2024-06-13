@@ -3,6 +3,9 @@ import numpy as np
 import pyModeS as pms
 from prettytable import PrettyTable
 import os
+from datetime import datetime
+import pickle
+import argparse
 
 
 database = {}
@@ -16,6 +19,7 @@ class Airplane(object):
         self.even_pos = ''
         self.odd_pos = ''
         self.callsign = ''
+        self.last_ts = 0
     
     def update_message(self, msg):
         icao, df, tc, ooe = message_info(msg)
@@ -23,10 +27,11 @@ class Airplane(object):
         assert icao == self.icao
 
         self.messages.append(msg)
-        
+        self.last_ts = datetime.now().strftime("%H:%M:%S")
+
         if tc == 4:
             self.callsign = pms.adsb.callsign(msg)
-        elif tc == 17:
+        elif tc == 19:
             self.vel = msg
         elif tc == 11:
             if ooe == '1':
@@ -57,6 +62,7 @@ class Airplane(object):
             heading,
             vertical_rate,
             speed_type,
+            self.last_ts,
             len(self.messages)
         ]
 
@@ -90,7 +96,10 @@ def bool2Hex(lst):
 
 
 def detectPreambleXcorr(chunk,corrthresh):    
-    preamble = np.array([1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0]) 
+    preamble = np.array([1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0]) - 0.25
+    
+    if preamble.shape != chunk.shape:
+        return 0
 
     chunk_mean = np.mean(chunk)
     c = np.array(chunk) - chunk_mean
@@ -172,16 +181,19 @@ def print_table(table):
     print(tab)
 
 
-def main():
+def main(save_db=False):
     sdr = connect()
     while True:
         try:
-            y = get_samples(sdr, 2048000)
+            y = get_samples(sdr, 2048000 * 2)
             messages = identify_messages(y)
 
             for message in messages:
                 icao = pms.common.icao(message)
-                
+
+                if not icao:
+                    continue
+
                 if icao not in database.keys():
                     new_record = Airplane(icao)
                     new_record.update_message(message)
@@ -191,7 +203,7 @@ def main():
                     record = database[icao]
                     record.update_message(message)
             
-            cols = 'icao, callsign, lat, lon, speed, heading, vertical_rate, speed_type, messages'.split(',')
+            cols = 'icao,callsign,lat,lon,speed,heading,vertical_rate,speed_type,last_message,messages'.split(',')
             table = [cols]
             
             for icao in database.keys():
@@ -201,9 +213,17 @@ def main():
             print_table(table)
             print("Press `ctrl+c` to exit")
 
+            if save_db:
+                with open('dump.p', 'wb') as db:
+                    pickle.dump(database, db)
+
         except KeyboardInterrupt:
             disconnect(sdr)
             return None
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--save', action='store_true')
+    args = parser.parse_args()
+
+    main(save_db=args.save)
